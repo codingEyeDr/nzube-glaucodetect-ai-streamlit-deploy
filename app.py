@@ -79,23 +79,30 @@ def get_user_predictions(username):
 @st.cache_resource
 def load_glaucoma_model():
     try:
-        # New improved loading with custom InputLayer handler
+        # Enhanced CustomInputLayer with shape fallback
+        class CustomInputLayer(tf.keras.layers.InputLayer):
+            def __init__(self, **kwargs):
+                if 'batch_shape' in kwargs:
+                    kwargs['input_shape'] = kwargs['batch_shape'][1:]
+                    kwargs.pop('batch_shape')
+                super().__init__(**kwargs)
+
         model = tf.keras.models.load_model(
             "NzubeGlaucoma_AI_Predictor.h5",
             compile=False,
-            custom_objects={'InputLayer': tf.keras.layers.InputLayer}
+            custom_objects={'InputLayer': CustomInputLayer}
         )
-        st.success("Model loaded successfully!")
+        st.success("Model successfully loaded with advanced workaround!")
         return model
     except Exception as e:
-        st.error(f"""Model loading failed. Please either:
-                1. Convert the model locally using the script I provided, or
+        st.error(f"""Model loading failed. Last resort options:
+                1. Run the conversion script below locally
                 2. Contact support with this error: {str(e)}""")
         return None
 
 model = load_glaucoma_model()
 if model is None:
-    st.stop()  # Halt app if model fails to load
+    st.stop()
 
 # 🔍 Prediction function
 def predict_glaucoma(image, model):
