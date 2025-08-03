@@ -76,51 +76,23 @@ def get_user_predictions(username):
     return c.fetchall()
 
 # 🤖 Load AI model
+# 🤖 Load AI model
 @st.cache_resource
 def load_glaucoma_model():
     try:
-        # Custom layer definitions
-        class CustomInputLayer(tf.keras.layers.InputLayer):
-            def __init__(self, **kwargs):
-                if 'batch_shape' in kwargs:
-                    kwargs['input_shape'] = kwargs['batch_shape'][1:]
-                    kwargs.pop('batch_shape')
-                super().__init__(**kwargs)
-        
-        # New DTypePolicy workaround for TF 2.15
-        class DTypePolicy(tf.keras.saving.LegacyDTypePolicy):
-            def __init__(self, name):
-                super().__init__(name)
-        
-        # Register all custom objects
-        custom_objects = {
-            'InputLayer': CustomInputLayer,
-            'DTypePolicy': DTypePolicy,
-            'GlorotUniform': tf.keras.initializers.GlorotUniform,
-            'Zeros': tf.keras.initializers.Zeros
-        }
-
         model = tf.keras.models.load_model(
-            "NzubeGlaucoma_AI_Predictor.h5",
-            compile=False,
-            custom_objects=custom_objects
+            "NzubeGlaucoma_AI_Predictor_NEW.h5",  # Use converted model
+            compile=False
         )
-        st.success("Model loaded with TF 2.15 compatibility fixes!")
+        st.success("Model loaded successfully from converted file!")
         return model
     except Exception as e:
-        st.error(f"""Final loading attempt failed. Required action:
-                1. Run this conversion script locally:\n\n
-                ```python
-                import tensorflow as tf
-                model = tf.keras.models.load_model("NzubeGlaucoma_AI_Predictor.h5")
-                model.save("NzubeGlaucoma_AI_Predictor_NEW.h5", save_format="h5")
-                ```
-                2. Upload the NEW.h5 file and update your app""")
+        st.error(f"Model loading failed: {str(e)}")
         return None
 
 model = load_glaucoma_model()
 if model is None:
-    st.stop()
+    st.stop()  # Halt app if model fails to load
 
 # 🔍 Prediction function
 def predict_glaucoma(image, model):
