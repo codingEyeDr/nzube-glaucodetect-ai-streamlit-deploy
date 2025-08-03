@@ -76,18 +76,37 @@ def get_user_predictions(username):
     return c.fetchall()
 
 # 🤖 Load AI model
-# 🤖 Load AI model
 @st.cache_resource
 def load_glaucoma_model():
     try:
+        # Custom layer handler with full legacy support
+        class CustomInputLayer(tf.keras.layers.InputLayer):
+            def __init__(self, **kwargs):
+                kwargs.pop('batch_shape', None)  # Remove problematic argument
+                kwargs.pop('ragged', None)       # Remove additional legacy args
+                kwargs.pop('sparse', None)
+                super().__init__(**kwargs)
+
+        # Register all potential custom objects
+        custom_objects = {
+            'InputLayer': CustomInputLayer,
+            'DTypePolicy': tf.keras.mixed_precision.Policy,
+            'GlorotUniform': tf.keras.initializers.GlorotUniform,
+            'Zeros': tf.keras.initializers.Zeros
+        }
+
         model = tf.keras.models.load_model(
-            "NzubeGlaucoma_AI_Predictor_NEW.h5",  # Use converted model
+            "NzubeGlaucoma_AI_Predictor_NEW.h5",
+            custom_objects=custom_objects,
             compile=False
         )
-        st.success("Model loaded successfully from converted file!")
+        st.success("Model loaded with full legacy support!")
         return model
     except Exception as e:
-        st.error(f"Model loading failed: {str(e)}")
+        st.error(f"""Final loading attempt failed. Required action:
+                1. Run the nuclear conversion script below locally
+                2. Contact support if this persists
+                Error: {str(e)}""")
         return None
 
 model = load_glaucoma_model()
