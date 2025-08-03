@@ -1,7 +1,11 @@
-# requirements.txt
-streamlit>=1.32.0
-tensorflow>=2.15.0
-pillow>=10.2.0
-numpy>=1.26.4
-groq>=0.3.0
-python-dotenv>=1.0.1
+# Core packages
+streamlit==1.32.0
+tensorflow-cpu==2.15.0  # Critical change - use CPU version
+pillow==10.2.0
+numpy==1.26.4
+groq==0.3.0
+python-dotenv==1.0.1
+
+# Required dependencies
+protobuf==3.20.3  # Essential for TensorFlow compatibility
+h5py==3.10.0      # Required for .h5 model loading
