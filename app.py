@@ -78,9 +78,30 @@ def get_user_predictions(username):
 # 🤖 Load AI model
 @st.cache_resource
 def load_glaucoma_model():
-    return load_model("NzubeGlaucoma_AI_Predictor.h5")
+    try:
+        # Primary loading method
+        model = tf.keras.models.load_model(
+            "NzubeGlaucoma_AI_Predictor.h5",
+            compile=False  # Critical for deployment
+        )
+        st.success("Model loaded with modern loader")
+        return model
+    except (TypeError, ValueError) as e:
+        try:
+            # Fallback for legacy models
+            st.warning("Using legacy model loading...")
+            return tf.keras.models.load_model(
+                "NzubeGlaucoma_AI_Predictor.h5",
+                custom_objects={},
+                compile=False
+            )
+        except Exception as e:
+            st.error(f"Model loading failed: {str(e)}")
+            return None
 
 model = load_glaucoma_model()
+if model is None:
+    st.stop()  # Halt app if model fails to load
 
 # 🔍 Prediction function
 def predict_glaucoma(image, model):
