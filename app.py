@@ -79,23 +79,31 @@ def get_user_predictions(username):
 @st.cache_resource
 def load_glaucoma_model():
     try:
-        # Enhanced CustomInputLayer with shape fallback
+        # Custom layer definitions
         class CustomInputLayer(tf.keras.layers.InputLayer):
             def __init__(self, **kwargs):
                 if 'batch_shape' in kwargs:
                     kwargs['input_shape'] = kwargs['batch_shape'][1:]
                     kwargs.pop('batch_shape')
                 super().__init__(**kwargs)
+        
+        # Register all custom objects
+        custom_objects = {
+            'InputLayer': CustomInputLayer,
+            'DTypePolicy': tf.keras.mixed_precision.DTypePolicy,
+            'GlorotUniform': tf.keras.initializers.GlorotUniform,
+            'Zeros': tf.keras.initializers.Zeros
+        }
 
         model = tf.keras.models.load_model(
             "NzubeGlaucoma_AI_Predictor.h5",
             compile=False,
-            custom_objects={'InputLayer': CustomInputLayer}
+            custom_objects=custom_objects
         )
-        st.success("Model successfully loaded with advanced workaround!")
+        st.success("Model loaded with full custom object registration!")
         return model
     except Exception as e:
-        st.error(f"""Model loading failed. Last resort options:
+        st.error(f"""Model loading failed. Required steps:
                 1. Run the conversion script below locally
                 2. Contact support with this error: {str(e)}""")
         return None
