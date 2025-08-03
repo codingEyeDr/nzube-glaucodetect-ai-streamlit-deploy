@@ -96,7 +96,7 @@ def load_glaucoma_model():
         }
 
         model = tf.keras.models.load_model(
-            "NzubeGlaucoma_AI_Predictor_NEW.h5",
+            "NzubeGlaucoma_AI_Predictor_FINAL.h5",
             custom_objects=custom_objects,
             compile=False
         )
