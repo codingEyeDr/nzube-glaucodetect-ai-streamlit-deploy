@@ -79,25 +79,19 @@ def get_user_predictions(username):
 @st.cache_resource
 def load_glaucoma_model():
     try:
-        # Primary loading method
+        # New improved loading with custom InputLayer handler
         model = tf.keras.models.load_model(
             "NzubeGlaucoma_AI_Predictor.h5",
-            compile=False  # Critical for deployment
+            compile=False,
+            custom_objects={'InputLayer': tf.keras.layers.InputLayer}
         )
-        st.success("Model loaded with modern loader")
+        st.success("Model loaded successfully!")
         return model
-    except (TypeError, ValueError) as e:
-        try:
-            # Fallback for legacy models
-            st.warning("Using legacy model loading...")
-            return tf.keras.models.load_model(
-                "NzubeGlaucoma_AI_Predictor.h5",
-                custom_objects={},
-                compile=False
-            )
-        except Exception as e:
-            st.error(f"Model loading failed: {str(e)}")
-            return None
+    except Exception as e:
+        st.error(f"""Model loading failed. Please either:
+                1. Convert the model locally using the script I provided, or
+                2. Contact support with this error: {str(e)}""")
+        return None
 
 model = load_glaucoma_model()
 if model is None:
