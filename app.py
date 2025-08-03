@@ -87,10 +87,15 @@ def load_glaucoma_model():
                     kwargs.pop('batch_shape')
                 super().__init__(**kwargs)
         
+        # New DTypePolicy workaround for TF 2.15
+        class DTypePolicy(tf.keras.saving.LegacyDTypePolicy):
+            def __init__(self, name):
+                super().__init__(name)
+        
         # Register all custom objects
         custom_objects = {
             'InputLayer': CustomInputLayer,
-            'DTypePolicy': tf.keras.mixed_precision.DTypePolicy,
+            'DTypePolicy': DTypePolicy,
             'GlorotUniform': tf.keras.initializers.GlorotUniform,
             'Zeros': tf.keras.initializers.Zeros
         }
@@ -100,12 +105,17 @@ def load_glaucoma_model():
             compile=False,
             custom_objects=custom_objects
         )
-        st.success("Model loaded with full custom object registration!")
+        st.success("Model loaded with TF 2.15 compatibility fixes!")
         return model
     except Exception as e:
-        st.error(f"""Model loading failed. Required steps:
-                1. Run the conversion script below locally
-                2. Contact support with this error: {str(e)}""")
+        st.error(f"""Final loading attempt failed. Required action:
+                1. Run this conversion script locally:\n\n
+                ```python
+                import tensorflow as tf
+                model = tf.keras.models.load_model("NzubeGlaucoma_AI_Predictor.h5")
+                model.save("NzubeGlaucoma_AI_Predictor_NEW.h5", save_format="h5")
+                ```
+                2. Upload the NEW.h5 file and update your app""")
         return None
 
 model = load_glaucoma_model()
